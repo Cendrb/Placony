@@ -1,6 +1,8 @@
-﻿namespace Assets.Scripts.Registry
+﻿using System.Text;
+
+namespace Assets.Scripts.Registry
 {
-    class ItemIdentifier
+    public class ItemIdentifier
     {
         public readonly Domain Domain;
         public readonly string TableName;
@@ -12,7 +14,12 @@
             this.Domain = domain;
             this.TableName = tableName;
             this.InnerName = innerName;
-            this.IdentifierString = domain.Name + ":" + tableName + "." + innerName;
+            this.IdentifierString = CreateIdentifierString(domain, tableName, innerName);
+        }
+
+        public static string CreateIdentifierString(Domain domain, string tableName, string innerName)
+        {
+            return domain.Name + ":" + tableName + "." + innerName;
         }
 
         public static ItemIdentifier Parse(string identifier, Domain domain = null, string tableName = null)

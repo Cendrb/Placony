@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Assets.Scripts
 {
-    class Domain
+    public class Domain
     {
         public static readonly Domain Vanilla = new Domain("Vanilla");
         public static readonly Domain Custom = new Domain("Custom");

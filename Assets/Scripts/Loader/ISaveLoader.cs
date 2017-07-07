@@ -1,6 +1,6 @@
 ﻿namespace Assets.Scripts.Loader
 {
-    public interface IStuffLoader
+    public interface ISaveLoader
     {
         void Load(string filesDirectory);
         void PostLoad();

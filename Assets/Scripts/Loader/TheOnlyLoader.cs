@@ -8,90 +8,103 @@ namespace Assets.Scripts.Loader
     {
         public static readonly TheOnlyLoader Instance = new TheOnlyLoader();
 
-        private List<IStuffLoader> saveLoaders = new List<IStuffLoader>();
-        private List<IGameDefinedStuffLoader> gameDefinedLoaders = new List<IGameDefinedStuffLoader>();
+        private List<IGameLoader> gameLoaders = new List<IGameLoader>();
+        private List<ISaveLoader> saveLoaders = new List<ISaveLoader>();
 
         private TheOnlyLoader()
         {
-            
+
+        }
+
+        public StringIdentifiedRegistryItem FindItem(ItemIdentifier identifier)
+        {
+            foreach (IGameLoader loader in this.gameLoaders)
+            {
+                if (loader.TableName == identifier.TableName)
+                {
+                    StringIdentifiedRegistryItem item = loader.FindItem(identifier);
+                    if (item != null)
+                    {
+                        return item;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public string FindIdentifierString(StringIdentifiedRegistryItem item)
+        {
+            foreach (IGameLoader loader in this.gameLoaders)
+            {
+                if (loader.TableName == item)
+                {
+                    StringIdentifiedRegistryItem item = loader.FindItem(identifier);
+                    if (item != null)
+                    {
+                        return item;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public void DoDumbStuff()
         {
-            ResourceType.Registry.CreateNew(new ItemIdentifier(Domain.Vanilla, "IronOre"));
+            
         }
 
-        public void LoadGame(string filesDirectory)
+        public void LoadGame(string filesDirectory, Domain domain)
         {
-            foreach (IGameDefinedStuffLoader loader in this.gameDefinedLoaders)
+            foreach (IGameLoader loader in this.gameLoaders)
             {
-                loader.Load(filesDirectory);
+                loader.Load(filesDirectory, domain);
             }
 
-            foreach (IGameDefinedStuffLoader loader in this.gameDefinedLoaders)
+            foreach (IGameLoader loader in this.gameLoaders)
             {
                 loader.PostLoad();
             }
         }
 
-        public void LoadSave(string saveDirectory)
-        {
-            foreach(IStuffLoader loader in this.saveLoaders)
-            {
-                if(loader is IGameDefinedStuffLoader)
-                {
-                    // only replace ids
-                    (loader as IGameDefinedStuffLoader).ReplaceIDsFromFile(saveDirectory);
-                }
-                else
-                {
-                    // load all data
-                    loader.Load(saveDirectory);
-                }
-            }
-
-            foreach (IStuffLoader loader in this.saveLoaders)
-            {
-                if(!(loader is IGameDefinedStuffLoader))
-                {
-                    loader.PostLoad();
-                }
-            }
-        }
-
         public void SaveGame(string filesDirectory)
         {
-            foreach (IGameDefinedStuffLoader loader in this.gameDefinedLoaders)
+            foreach (IGameLoader loader in this.gameLoaders)
             {
                 loader.Save(filesDirectory);
             }
         }
 
-        public void SaveSave(string saveDirectory)
+        public void LoadSave(string filesDirectory)
         {
-            foreach (IStuffLoader loader in this.saveLoaders)
+            foreach (ISaveLoader loader in this.saveLoaders)
             {
-                if (loader is IGameDefinedStuffLoader)
-                {
-                    // only replace ids
-                    (loader as IGameDefinedStuffLoader).SaveIDsToFile(saveDirectory);
-                }
-                else
-                {
-                    // load all data
-                    loader.Save(saveDirectory);
-                }
+                loader.Load(filesDirectory);
+            }
+
+            foreach (ISaveLoader loader in this.saveLoaders)
+            {
+                loader.PostLoad();
             }
         }
 
-        public void RegisterGameDefinedLoader(IGameDefinedStuffLoader loader)
+        public void SaveSave(string filesDirectory)
         {
-            this.gameDefinedLoaders.Add(loader);
+            foreach (ISaveLoader loader in this.saveLoaders)
+            {
+                loader.Save(filesDirectory);
+            }
         }
 
-        public void RegisterSaveLoader(IStuffLoader loader)
+        public void RegisterSaveLoader(ISaveLoader loader)
         {
             this.saveLoaders.Add(loader);
+        }
+
+        public void RegisterGameLoader(IGameLoader loader)
+        {
+            this.gameLoaders.Add(loader);
         }
     }
 }

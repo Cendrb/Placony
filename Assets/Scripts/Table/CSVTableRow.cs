@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Assets.Scripts.ColumnDefinitions;
 
 namespace Assets.Scripts.Table
@@ -8,16 +9,20 @@ namespace Assets.Scripts.Table
         private string[] columnStrings;
         private List<IColumnDefinition> columnsInOrder;
 
-        public CSVTableRow(List<IColumnDefinition> columnsInOrder)
+        public string DomainName { get; private set; }
+
+        public CSVTableRow(List<IColumnDefinition> columnsInOrder, string domainName)
         {
             this.columnsInOrder = columnsInOrder;
             this.columnStrings = new string[columnsInOrder.Count];
+            this.DomainName = domainName;
         }
 
-        public CSVTableRow(string lineText, List<IColumnDefinition> columnsInOrder)
+        public CSVTableRow(string lineText, List<IColumnDefinition> columnsInOrder, string domainName)
         {
             this.columnsInOrder = columnsInOrder;
             this.columnStrings = lineText.Split(',');
+            this.DomainName = domainName;
         }
 
         public T Read<T>(ColumnDefinition<T> column)

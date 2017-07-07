@@ -5,16 +5,18 @@ using Assets.Scripts.Loader;
 using Assets.Scripts.Registry;
 using Assets.Scripts.Table;
 using Assets.Scripts.Util;
+using Assets.Scripts.ColumnDefinitions;
+using System.Collections.Generic;
 
 namespace Assets.Scripts.Items.Objects
 {
-    class ResourceTypeGroup : GameDefinedRegistryItem, IResourceTypeFilter
+    class ResourceTypeGroup : StringIdentifiedRegistryItem, IResourceTypeFilter
     {
         public static readonly ThisRegistry Registry = new ThisRegistry();
 
-        public ImmutableCollection<ResourceType> ResourceTypes { get; private set; }
+        public List<ResourceType> ResourceTypes { get; private set; }
 
-        public ResourceTypeGroup(ItemIdentifier identifier) : base(identifier)
+        public ResourceTypeGroup(Domain domain, string innerName) : base(domain, innerName)
         {
         }
 
@@ -28,35 +30,44 @@ namespace Assets.Scripts.Items.Objects
             return this.Contains(resourceType);
         }
 
-        public class ThisRegistry : GameDefinedItemRegistry<ResourceTypeGroup>
+        public class ThisRegistry : StringIDItemRegistry<ResourceTypeGroup>
         {
-            public ThisRegistry() 
+            protected static readonly ListColumnDefinition<ItemIdentifier> ResourcesColumn = new ListColumnDefinition<ItemIdentifier>(
+                new ItemIdentifierColumnDefinition("IncludedResource"),
+                "IncludedResources");
+
+            public ThisRegistry()
                 : base("ResourceTypeGroups")
             {
             }
 
-            public ResourceTypeGroup CreateNew(ItemIdentifier identifier, string name)
+            public ResourceTypeGroup CreateNew(Domain domain, string innerName)
             {
-                return this.RegisterItem(new ResourceTypeGroup(identifier)
+                return this.Register(new ResourceTypeGroup(domain, innerName)
                 {
                 });
             }
 
             protected override ResourceTypeGroup LoadItem(ITableRowDataReader reader)
             {
-                return new ResourceTypeGroup(ItemIdentifier.Parse(reader.Read(IdentifierColumn)))
+                return new ResourceTypeGroup(Domain.FindByName(reader.DomainName), reader.Read(IdentifierColumn))
                 {
                 };
             }
 
             protected override void LoadReferencesForItem(PostLoadData<ResourceTypeGroup> row)
             {
-                throw new NotImplementedException();
+                List<ItemIdentifier> identifiers = row.Source.Read(ResourcesColumn);
+                foreach (ItemIdentifier identifier in identifiers)
+                {
+                    row.LoadedItem.ResourceTypes.Add((ResourceType)TheOnlyLoader.Instance.FindItem(identifier));
+                }
             }
 
             protected override void SaveItem(ResourceTypeGroup item, ITableRowDataWriter writer)
             {
-                writer.Write(IdentifierColumn, item.Identifier.IdentifierString);
+                writer.Write(IdentifierColumn, item.InnerName);
+                writer.Write<List<ResourceType>>(ResourcesColumn, item.ResourceTypes);
             }
         }
     }

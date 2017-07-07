@@ -1,7 +1,7 @@
 ﻿namespace Assets.Scripts.Registry
 {
-    abstract class RegistryItem
+    public abstract class RegistryItem
     {
-
+        public abstract IItemRegistry Registry { get; } 
     }
 }

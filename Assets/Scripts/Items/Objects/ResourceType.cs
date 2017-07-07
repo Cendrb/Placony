@@ -6,14 +6,22 @@ using Assets.Scripts.Table;
 
 namespace Assets.Scripts.Items.Objects
 {
-    class ResourceType : GameDefinedRegistryItem, IResourceTypeFilter
+    class ResourceType : StringIdentifiedRegistryItem, IResourceTypeFilter
     {
         public static readonly ThisRegistry Registry = new ThisRegistry();
 
-        private ResourceType(ItemIdentifier identifier)
-            : base(identifier)
+        private ResourceType(Domain domain, string innerName)
+            : base(domain, innerName)
         {
             
+        }
+
+        public override IItemRegistry Registry
+        {
+            get
+            {
+                return Re
+            }
         }
 
         public bool Is(ResourceType resourceType)
@@ -21,23 +29,23 @@ namespace Assets.Scripts.Items.Objects
             return this == resourceType;
         }
 
-        public class ThisRegistry : GameDefinedItemRegistry<ResourceType>
+        public class ThisRegistry : StringIDItemRegistry<ResourceType>
         {
             public ThisRegistry() 
                 : base("ResourceTypes")
             {
             }
 
-            public ResourceType CreateNew(ItemIdentifier identifier)
+            public ResourceType CreateNew(Domain domain, string identifier)
             {
-                return this.RegisterItem(new ResourceType(identifier)
+                return this.Register(new ResourceType(domain, identifier)
                 {
                 });
             }
 
             protected override ResourceType LoadItem(ITableRowDataReader reader)
             {
-                return new ResourceType(ItemIdentifier.Parse(reader.Read(IdentifierColumn)))
+                return new ResourceType(Domain.FindByName(reader.DomainName), reader.Read(IdentifierColumn))
                 {
                 };
             }
@@ -48,7 +56,7 @@ namespace Assets.Scripts.Items.Objects
 
             protected override void SaveItem(ResourceType item, ITableRowDataWriter writer)
             {
-                writer.Write(IdentifierColumn, item.Identifier.IdentifierString);
+                writer.Write(IdentifierColumn, item.InnerName);
             }
         }
     }

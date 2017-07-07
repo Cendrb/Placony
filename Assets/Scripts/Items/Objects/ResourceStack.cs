@@ -7,22 +7,20 @@ using Assets.Scripts.Loader;
 
 namespace Assets.Scripts.Items.Objects
 {
-    class ResourceStack : RegistryItem
+    class ResourceStack : IntIdentifiedRegistryItem
     {
         public static readonly ThisRegistry Registry = new ThisRegistry();
 
         public int Quantity { get; private set; }
         public IResourceTypeFilter ResourceFilter { get; private set; }
 
-        private int resourceTypeID;
-        private int resourceGroupID;
-
-        private ResourceStack()
+        private ResourceStack(int id)
+            : base(id)
         {
 
         }
 
-        public class ThisRegistry : ItemRegistry<ResourceStack>
+        public class ThisRegistry : IntIDItemRegistry<ResourceStack>
         {
             protected static readonly IntegerColumnDefinition QuantityColumn = new IntegerColumnDefinition("Quantity");
 
@@ -33,7 +31,7 @@ namespace Assets.Scripts.Items.Objects
 
             protected override ResourceStack LoadItem(ITableRowDataReader reader)
             {
-                return new ResourceStack()
+                return new ResourceStack(reader.Read(IDColumn))
                 {
                     Quantity = reader.Read(QuantityColumn)
                 };
@@ -46,7 +44,8 @@ namespace Assets.Scripts.Items.Objects
 
             protected override void SaveItem(ResourceStack item, ITableRowDataWriter writer)
             {
-                throw new NotImplementedException();
+                writer.Write(IDColumn, item.ID);
+                writer.Write(QuantityColumn, item.Quantity);
             }
         }
     }
